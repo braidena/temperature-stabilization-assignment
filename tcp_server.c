@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 #include <stdbool.h>
 #include "utils.h"
-
+#include <math.h>
 
 #define numExternals 4     // Number of external processes 
 
@@ -106,6 +106,9 @@ int main(void)
 
 
     int stable = false;
+    int centralTemp = 0;
+    float lastTemps[numExternals];
+    int initialRun = 0;
     while ( !stable ){
 
         // Array that stores temperatures from clients 
@@ -127,12 +130,14 @@ int main(void)
 
         // Modify Temperature 
         float updatedTemp = temperature[0] + temperature[1] + temperature[2] + temperature[3];
-        updatedTemp += updatedTemp / 4.0;  
+        centralTemp = 2*centralTemp;
+        centralTemp += updatedTemp;
+        centralTemp = centralTemp / 6.0;
 
 
         // Construct message with updated temperature
         struct msg updated_msg; 
-        updated_msg.T = updatedTemp;
+        updated_msg.T = centralTemp;
         updated_msg.Index = 0;                // Index of central server 
 
 
@@ -147,8 +152,23 @@ int main(void)
         printf("\n");
 
         // Check stability condition 
-        if (updatedTemp == 0)
-            stable = true; 
+        if (initialRun == 0) {
+            for (int i = 0; i < numExternals; i++) {
+                lastTemps[i] = temperature[i];
+            }
+            initialRun = 1;
+        } else {
+            int tempCounter = 0;
+            for (int i = 0; i < numExternals; i++) {
+                if (fabs(lastTemps[i] - temperature[i]) > 0.001) {
+                    tempCounter += 1;
+                }
+            }
+            if (tempCounter == 4) {
+                stable = true;
+                printf("Temperature Stabilized!\n");
+            }
+        }
 
     }
  

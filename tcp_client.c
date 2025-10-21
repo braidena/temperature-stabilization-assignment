@@ -45,25 +45,35 @@ int main (int argc, char *argv[])
     printf("Connected with server successfully\n");
     printf("--------------------------------------------------------\n\n");
        
-    // Package to the sent to server 
-    the_message = prepare_message(externalIndex, initialTemperature); 
+    while (1) {
+        // Package to the sent to server 
+        the_message = prepare_message(externalIndex, initialTemperature); 
 
-    // Send the message to server:
-    if(send(socket_desc, (const void *)&the_message, sizeof(the_message), 0) < 0){
-        printf("Unable to send message\n");
-        return -1;
-    }
- 
+        // Send the message to server:
+        if(send(socket_desc, (const void *)&the_message, sizeof(the_message), 0) < 0){
+            printf("Unable to send message\n");
+            return -1;
+        }
+    
 
-    // Receive the server's response:
-    if(recv(socket_desc, (void *)&the_message, sizeof(the_message), 0) < 0){
-        printf("Error while receiving server's msg\n");
-        return -1;
+        // Receive the server's response:
+        ssize_t bytesRecv = recv(socket_desc, (void *)&the_message, sizeof(the_message), 0);
+        if (bytesRecv == 0) {
+            printf("Temperature Stabalized: %f\n", initialTemperature);
+            break;
+        } else if (bytesRecv < 0) {
+            perror("Receive failed");
+            break;
+        }
+        
+        printf("--------------------------------------------------------\n");
+        printf("Updated temperature sent by the Central process = %f\n", the_message.T);
+        initialTemperature = initialTemperature * 3;
+        float tempTemp = the_message.T * 2;
+        initialTemperature += tempTemp;
+        initialTemperature = initialTemperature / 5.0;
     }
-    
-    printf("--------------------------------------------------------\n");
-    printf("Updated temperature sent by the Central process = %f\n", the_message.T);
-    
+        
     // Close the socket:
     close(socket_desc);
     
