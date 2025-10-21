@@ -57,7 +57,7 @@ Open four terminals and in each one run:
 ./client 4 400
 ```
 
-![sample_run](sample_run.png)
+![sample_run](sampe_run.png)
 
 
  
