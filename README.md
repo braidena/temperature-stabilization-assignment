@@ -1,5 +1,6 @@
 # Temperature stabilization using inter-process communication
 The server takes in 4 connectiions and their initial temperatures. Then, it calculates the new central temp from the formula below, sending that value back to the external processes. The external processes then calculate their own temperature to then be sent back to the central process. Once all external temps have stabilized, connections are closed and final values are printed.
+
 **External processes:**
 
 $$
